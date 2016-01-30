@@ -36,17 +36,6 @@ BotBrain.start = function(conf) {
 
 var _b = BotBrain.prototype;
 
-_b.listen = function() {
-  var _this = this;
-  return new Promise(function(resolve, reject){
-    // var stopListening =
-    _this.api.listen(function(err, event) {
-      if(err) { reject({error:err, bot:_this}); }
-      else { resolve({event:event, bot:_this}); }
-    });
-  });
-}
-
 _b.joinThread = function(event) {
   var _this = this;
   var participants = this.participantIds(event.participantIDs)
@@ -107,6 +96,11 @@ _b.respond = function(event) {
   // console.log(bot.isForMe(event.body));
 }
 
+_b.individualRespond = function(event) {
+  this.api.markAsRead(event.threadID, function(err) { if(err) console.log(err); });
+  this.api.sendMessage("BOT: " + event.body, event.threadID);
+}
+
 _b.whittyError = function(event) {
   var _this = this;
   _this.api.sendMessage("I don't know who you are, but I have a certain set of skills... blah blah blah", event.threadID);
@@ -120,6 +114,10 @@ _b.isAllowed = function(event) {
     }
   }
   return true;
+}
+
+_b.isIndividualConvo = function(event) {
+  return event.participantIDs.length == 1;
 }
 
 module.exports = BotBrain;
