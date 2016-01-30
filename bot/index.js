@@ -9,39 +9,17 @@ var BotBrain = require("./botBrain.js");
 var user = conf.user;
 var chatEmitter = new events.EventEmitter();
 
-function start() {
-  return new Promise(function(resolve, reject){
-    login({email: user.email, password: user.password}, function callback (err, api) {
-      if(err) { reject(err); }
-      else {
-        api.setOptions({listenEvents: true});
-        resolve(api);
-      }
-    });
-  });
-}
-function listen(api) {
-  return new Promise(function(resolve, reject){
-    // var stopListening =
-    api.listen(function(err, event) {
-      if(err) { reject(err); }
-      else { resolve(event); }
-    });
-  });
-}
-
-start().then(function(api){
-  var bot = new BotBrain(api, conf);
-  listen(api).then(function(event){
-    switch(event.type) {
-      case "message":
-        chatEmitter.emit('message', {event:event, bot:bot})
-        break;
-      case "event":
-        chatEmitter.emit('event', {event:event, bot:bot})
-        break;
-    }
-  });
+BotBrain.start(conf).then(function(bot){ return bot.listen(); }).then(function(blob){
+  var bot = blob.bot;
+  var event = blob.event;
+  switch(event.type) {
+    case "message":
+      chatEmitter.emit('message', {event:event, bot:bot})
+      break;
+    case "event":
+      chatEmitter.emit('event', {event:event, bot:bot})
+      break;
+  }
 });
 
 chatEmitter.on('message', function(blob){

@@ -1,7 +1,12 @@
 {
   "user": {
-    "id": "0000",
-    "email": "test",
-    "password": "test"
+    "id": "",
+    "email": "",
+    "password": ""
+  },
+  "users": [],
+  "parse": {
+    "applicationId": "",
+    "jsKey":""
   }
 }

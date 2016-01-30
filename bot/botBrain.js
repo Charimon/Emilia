@@ -1,5 +1,7 @@
 var Parse = require('parse/node');
+var Promise = require('promise');
 
+var login = require("facebook-chat-api");
 
 function BotBrain(api, conf) {
   this.name = "emilia";
@@ -10,7 +12,39 @@ function BotBrain(api, conf) {
   Parse.initialize(conf.parse.applicationId, conf.parse.jsKey);
 }
 
+BotBrain.fbLogin = function(email, password) {
+  return new Promise(function(resolve, reject){
+    login({email: email, password: password}, function callback (err, api) {
+      if(err) { reject(err); }
+      else { resolve(api); }
+    });
+  });
+}
+
+var _botBrainPromise = null;
+BotBrain.start = function(conf) {
+  if(_botBrainPromise != null) return _botBrainPromise;
+  
+  _botBrainPromise = BotBrain.fbLogin(conf.user.email, conf.user.password).then(function(api){
+    api.setOptions({listenEvents: true});
+    var botBrain = new BotBrain(api, conf);
+    return botBrain;
+  });
+  return _botBrainPromise;
+}
+
 var _b = BotBrain.prototype;
+
+_b.listen = function() {
+  var _this = this;
+  return new Promise(function(resolve, reject){
+    // var stopListening =
+    _this.api.listen(function(err, event) {
+      if(err) { reject({error:err, bot:_this}); }
+      else { resolve({event:event, bot:_this}); }
+    });
+  });
+}
 
 _b.joinThread = function(event) {
   var _this = this;
@@ -54,7 +88,7 @@ _b.greetInitialParticipants = function(ids, threadId) {
     _this.greetParticipant(ids[i]);
   }
   
-  _this.api.sendMessage("Hey guys! I've sent ya'll messages individually so as to not pollute this chat", threadId);
+  _this.api.sendMessage("Hey guys! Where would you like to go?", threadId);
 }
 
 _b.greetParticipant = function(id) {
