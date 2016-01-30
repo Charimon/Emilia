@@ -5,6 +5,7 @@ function BotBrain(api, conf) {
   this.name = "emilia";
   this.nicknames = ["em", "emi"]
   this.api = api;
+  this.conf = conf;
   
   Parse.initialize(conf.parse.applicationId, conf.parse.jsKey);
 }
@@ -58,7 +59,32 @@ _b.greetInitialParticipants = function(ids, threadId) {
 
 _b.greetParticipant = function(id) {
   var _this = this;
+  
+  var ParticipantObject = Parse.Object.extend("ParticipantObject");
+  var participantObject = new ParticipantObject();
+  participantObject.save({fbId: id, status: "CONTACTED" });
+  
   _this.api.sendMessage("Hey, please open this link to do things: http://www.google.com", id);
+}
+
+_b.respond = function(event) {
+  this.api.markAsRead(event.threadID, function(err) { if(err) console.log(err); });
+  // console.log(bot.isForMe(event.body));
+}
+
+_b.whittyError = function(event) {
+  var _this = this;
+  _this.api.sendMessage("I don't know who you are, but I have a certain set of skills... blah blah blah", event.threadID);
+}
+
+_b.isAllowed = function(event) {
+  var participants = this.participantIds(event.participantIDs);
+  for(var i = 0; i < participants.length; i++ ) {
+    if(this.conf.users.indexOf(parseInt(participants[i])) < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 module.exports = BotBrain;

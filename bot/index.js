@@ -13,15 +13,18 @@ login({email: user.email, password: user.password}, function callback (err, api)
   
   var bot = new BotBrain(api, conf);
   
-  var stopListening = api.listen(function(err, event) {
+  // var stopListening =
+  api.listen(function(err, event) {
     if(err) return console.error(err);
     
     switch(event.type) {
       case "message":
-        bot.joinThread(event);
-        api.markAsRead(event.threadID, function(err) { if(err) console.log(err); });
-        // console.log(bot.isForMe(event.body));
-        
+        if(bot.isAllowed(event)) {
+          bot.joinThread(event);
+          bot.respond(event);
+        } else {
+          bot.whittyError(event);
+        }
         break;
       case "event": break;
     }
