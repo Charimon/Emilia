@@ -16,6 +16,7 @@
     "lunr": "^0.6.0",
     "node-uuid": "^1.4.7",
     "parse": "^1.7.0",
-    "promise": "^7.1.1"
+    "promise": "^7.1.1",
+    "request-promise": "^2.0.0"
   }
 }
