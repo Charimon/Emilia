@@ -1,5 +1,6 @@
 var Parse = require('parse/node');
 var Promise = require('promise');
+var UUID = require('node-uuid');
 
 var login = require("facebook-chat-api");
 
@@ -52,11 +53,11 @@ _b.joinThread = function(event) {
   var ThreadObject = Parse.Object.extend("ThreadObject");
   
   var query = new Parse.Query(ThreadObject);
-  query.equalTo("theadId", event.threadID);
+  query.equalTo("threadId", event.threadID);
   query.first().then(function(thread){
     if(thread == null) {
       var threadObject = new ThreadObject();
-      threadObject.save({theadId: event.threadID, participants: participants});
+      threadObject.save({threadId: event.threadID, participants: participants});
       _this.greetInitialParticipants(participants, event.threadID);
       return threadObject;
     } else { return thread; }
@@ -96,9 +97,9 @@ _b.greetParticipant = function(id) {
   
   var ParticipantObject = Parse.Object.extend("ParticipantObject");
   var participantObject = new ParticipantObject();
-  participantObject.save({fbId: id, status: "CONTACTED" });
-  
-  _this.api.sendMessage("Hey, please open this link to do things: http://www.google.com", id);
+  participantObject.save({fbId: id, uuid:UUID.v4(), hasLocation: false, hasBookedFlight: false, hasBookedHotel: false });
+  var uuid = participantObject.get("uuid");
+  _this.api.sendMessage("Hey, please open this link to do things: http://www.google.com/" + uuid, id);
 }
 
 _b.respond = function(event) {

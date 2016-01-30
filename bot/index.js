@@ -14,9 +14,11 @@ BotBrain.start(conf).then(function(bot){ return bot.listen(); }).then(function(b
   var event = blob.event;
   switch(event.type) {
     case "message":
+      debugger;
       chatEmitter.emit('message', {event:event, bot:bot})
       break;
     case "event":
+      debugger;
       chatEmitter.emit('event', {event:event, bot:bot})
       break;
   }
@@ -25,7 +27,6 @@ BotBrain.start(conf).then(function(bot){ return bot.listen(); }).then(function(b
 chatEmitter.on('message', function(blob){
   var event = blob.event;
   var bot = blob.bot;
-  console.log("event");
   if(bot.isAllowed(event)) {
     bot.joinThread(event);
     bot.respond(event);

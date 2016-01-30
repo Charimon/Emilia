@@ -14,6 +14,7 @@
     "facebook-chat-api": "^1.0.6",
     "fs": "0.0.2",
     "lunr": "^0.6.0",
+    "node-uuid": "^1.4.7",
     "parse": "^1.7.0",
     "promise": "^7.1.1"
   }
