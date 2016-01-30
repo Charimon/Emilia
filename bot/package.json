@@ -10,8 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "airports": "^1.0.0",
     "facebook-chat-api": "^1.0.6",
     "fs": "0.0.2",
-    "parse": "^1.7.0"
+    "parse": "^1.7.0",
+    "lunr": "^0.6.0"
   }
 }
