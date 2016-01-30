@@ -1,3 +1,4 @@
+var login = require("facebook-chat-api");
 var fs = require('fs');
 var conf = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
 
