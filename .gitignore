@@ -34,3 +34,4 @@ node_modules
 
 # irnore sensitive config
 bot/config.json
+web/ts/config.ts
