@@ -12,6 +12,7 @@ var Chrono = require('chrono-node')
 var DateFormat = require('dateformat');
 var DateMath = require('date-math');
 var Weekend = require('./weekend.js');
+var Hotel = require('./hotel.js');
 
 // function BotBrain(api, conf) {
 //   this.name = "emilia";
@@ -266,7 +267,21 @@ class BotBrain {
         return
       }
       
-      if(!(conversation.get('hotelId'))) {
+      if(!(conversation.get('hotel')) ) {
+        
+        var strippedMessage = event.body.substring(2).trim();
+        var firstChar = parseInt(strippedMessage.substring(0,1));
+        if(!isNaN(firstChar) && firstChar > 0 && firstChar <= API.getCities().length) {
+          var hotel = conversation.get('hotelOptions')[firstChar]
+
+          conversation.set('hotel', hotel)
+          conversation.save();
+                    
+          this.api.sendMessage(`Sweet, you will be staying at ${hotel.name}`, event.threadID);
+                    
+        } else {
+          this.whittyResponse(event);
+        }
         
       }
 
@@ -296,7 +311,23 @@ class BotBrain {
         
     API.getHotelSpreadCity(city, 10, from, to).then ( (hotels) => {
       console.log("Hotel %j", hotels)
-      this.api.sendMessage(`I think you will like these:`, event.threadID);
+      
+      var message = "I think you will like these:";
+      message += "\n\n";
+
+      var parsedHotels = hotels.map( (h) => {return new Hotel(h)} )
+      message += parsedHotels.map( (h, i) => {
+        return `\n[${i+1}]     ${h.prettyLine()}`;
+      }).join(" ");
+      message += "\n\rSelect a number or type ‘m’ for more."
+            
+      this.api.sendMessage(message, event.threadID);
+      
+      // record the hotel ids that we displayed
+      console.log("Displayed %j hodels to choose", parsedHotels)
+      conversation.set('hotelOptions', parsedHotels)
+      conversation.save()
+      
     }, (error) => {
       // The save failed.  Error is an instance of Parse.Error.
       console.error(error);
