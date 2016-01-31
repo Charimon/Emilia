@@ -198,8 +198,8 @@ class BotBrain {
           } else {
             this.whittyResponse(event);
           }
-        } else {
-          
+        } else if(conversation.get('sentPlaces') && conversation.get('selectedPlaces') && !conversation.get('sentDates')){
+          // this.api.sendMessage(message, event.threadID);
         }
       }
     }
