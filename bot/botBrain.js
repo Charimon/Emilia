@@ -210,7 +210,7 @@ class BotBrain {
   }
 
   handleNagging(event, participants) {
-    var idToNag = 1238280239
+    // var idToNag = 1238280239
     var idToNag = 2203693
     
     this.api.sendMessage("nag nag nag", event.threadID);
