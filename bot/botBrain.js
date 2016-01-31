@@ -218,7 +218,7 @@ class BotBrain {
             message += "\n\rOr just type in your own range."
             
             this.api.sendMessage(message, event.threadID);
-          }, 1000)
+          }, 500)
           
         } else {
           this.whittyResponse(event);
@@ -278,11 +278,17 @@ class BotBrain {
           conversation.save();
                     
           this.api.sendMessage(`Sweet, you will be staying at ${hotel.name}`, event.threadID);
+         
+          setTimeout( () => {
+            var message = "Thanks for letting me help you plan your trips. You can finish booking your individual flights on the trip page: http://emilia.expedia.com/"
+            this.api.sendMessage(message, event.threadID);
+          }, 500)
                     
         } else {
-          this.whittyResponse(event);
+          this.whittyResponseHotel(event);
         }
-        
+       
+        return 
       }
 
     }
@@ -343,6 +349,13 @@ class BotBrain {
     this.api.sendMessage(responses[randomN], event.threadID);
   }
   
+  whittyResponseHotel(event) {
+    var strippedMessage = event.body.substring(2).trim();
+    var responses = ["You wanna to stay where, mate?!"];
+    var randomN = Math.floor((Math.random() * responses.length));
+    this.api.sendMessage(responses[randomN], event.threadID);
+  }
+  
   shouldRespondToEvent(event, participants) {
     if(!event.body.startsWith('@e')) return false;
     return true;
@@ -365,7 +378,7 @@ class BotBrain {
         
         participant.set("sentLink", true)
         participant.save()
-        this.api.sendMessage("Hey, your friend invited you to plane a trip with Expedia, here is your personalized dashboard for this trip: http://www.google.com/" + conversationThreadID + "/" + userID, userID)
+        this.api.sendMessage("Hey, your friend invited you to plane a trip with Expedia, here is your personalized dashboard for this trip: http://www.google.com/" + participant.id, userID)
       
         console.log("BotBrain - Sent personal link to " + userID)
       }
