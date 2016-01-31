@@ -183,6 +183,25 @@ class BotBrain {
       var strippedMessage = event.body.substring(2).trim();
       
       if(!conversation.get('sentWelcome')) {
+        
+        // go out and get everybody's name
+        var participantIds = participants.map ( (p) => {return p.get("userID")})
+        this.api.getUserInfo(participantIds, (err, foundFBData) => {
+          if(err) return console.error(err);
+          console.log("got people's data")
+          console.log("responce: %j", foundFBData)
+          
+          participants.forEach( (p) => {
+            let fbID = p.get("userID")
+            let userFBData = foundFBData[fbID]
+            if(userFBData) {
+              p.set("fbData", userFBData)
+              p.save()
+            }  
+          })
+          
+        });
+        
         var message = "Yep yep, I’m right here. Just ‘@e’ any time you want to address me. Here are options for places you might want to go. I'm going to send all of you some more info in a separate chat to help you decide. Just click the link";
         message += "\n\n";
         message += API.getCities().map((c, i) => {
@@ -272,7 +291,7 @@ class BotBrain {
         var strippedMessage = event.body.substring(2).trim();
         var firstChar = parseInt(strippedMessage.substring(0,1));
         if(!isNaN(firstChar) && firstChar > 0 && firstChar <= API.getCities().length) {
-          var hotel = conversation.get('hotelOptions')[firstChar]
+          var hotel = conversation.get('hotelOptions')[firstChar - 1]
 
           conversation.set('hotel', hotel)
           conversation.save();
@@ -280,7 +299,14 @@ class BotBrain {
           this.api.sendMessage(`Sweet, you will be staying at ${hotel.name}`, event.threadID);
          
           setTimeout( () => {
-            var message = "Thanks for letting me help you plan your trips. You can finish booking your individual flights on the trip page: http://emilia.expedia.com/"
+            // var message = "Thanks for letting me help you plan your trips. You can finish booking your individual flights on the trip page: http://emilia.expedia.com/"
+            
+            var message = "Thanks for letting me help you plan your trips. You can finish booking your individual flights on the trip pages:\n\n"
+            
+            message += participants.map ( (p) => {
+              return `${p.get("fbData").firstName}: ${p.dashboardUrl}\n`
+            }).join("")
+            
             this.api.sendMessage(message, event.threadID);
           }, 500)
                     
@@ -378,7 +404,8 @@ class BotBrain {
         
         participant.set("sentLink", true)
         participant.save()
-        this.api.sendMessage("Hey, your friend invited you to plane a trip with Expedia, here is your personalized dashboard for this trip: http://www.google.com/" + participant.id, userID)
+        
+        this.api.sendMessage("Hey, your friend invited you to plane a trip with Expedia, here is your personalized dashboard for this trip: " + participant.dashboardUrl, userID)
       
         console.log("BotBrain - Sent personal link to " + userID)
       }
