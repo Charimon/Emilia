@@ -87,10 +87,35 @@ class BotBrain {
     });
   }
   
+  isAllowedFBID(fbId) {
+    if(fbId == "1238280239" || fbId == "1238280290" || fbId == "2203693") {
+      return true
+    } else {
+      console.error(`BotBrain - fbID ${fbId} is not allowed to use the bot` )
+      return false
+    }
+  }
+  
+  hasAllowedFBID(fbIds) {
+    var allowed = fbIds.filter( (id) => this.isAllowedFBID(id) )
+    if(allowed.length > 0) {
+      return true
+    }
+        
+    console.error(`BotBrain - fbID ${fbIds} do not contain any allowed ids` )
+    return false
+  }
+  
   handleEventAsEvent(botId, event) {
     
-    if(event.logMessageType == "log:subscribe") {
+    if(event.logMessageType == "log:subscribe" && event.author) {
       // handle addition of a new uesr
+    
+      // if it is not Ash, Andrew, or Michael adding, then returna witty GFO
+      if(!this.isAllowedFBID(event.author)) {
+        this.whittyGTFOResponse(event)
+        return
+      }
       
       var addedParticipantIds = event.logMessageData.added_participants.map ( (fbStr) => { return fbStr.split(":")[1] })
       console.log("added participants: %j", addedParticipantIds)
@@ -134,6 +159,11 @@ class BotBrain {
   
   handleEventAsMessage(botId, event) {
     console.log("BotBrain - processing event as message");
+          
+    if(!this.hasAllowedFBID(event.participantIDs)) {
+      this.whittyGTFOResponse(event)
+      return
+    }
           
     var threadID = event.threadID;
     if(this.participantsForConvo[threadID]) {
@@ -426,6 +456,16 @@ class BotBrain {
     var randomN = Math.floor((Math.random() * responses.length));
     this.api.sendMessage(responses[randomN], event.threadID);
   }
+  
+  whittyGTFOResponse(event) {
+    var responses = [
+      "Still in private alpha. Learning how to put square pegs into round holes", 
+      "Still in private alpha. Learning what these series of tubes are about.", 
+      "Still in private alpha. Learning about acommodations, accomodations, acomodations."];
+    var randomN = Math.floor((Math.random() * responses.length));
+    this.api.sendMessage(responses[randomN], event.threadID);
+  }
+  
   
   shouldRespondToEvent(event, participants) {
     if(!event.body.startsWith('@e')) return false;
