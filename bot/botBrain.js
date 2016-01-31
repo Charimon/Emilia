@@ -121,9 +121,7 @@ class BotBrain {
 
   handleMessage(message, participants) {
     console.log("BotBrain - handleMessage");
-    this.sendPersonalLinks(participants
-    
-    
+    this.sendPersonalLinks(participants)
   }
   
   sendPersonalLinks(participants) {
