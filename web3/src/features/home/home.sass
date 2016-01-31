@@ -16,15 +16,19 @@ ui-view, body, html
 h1
   font-size: 18px
   padding: 1em 20px
+  font-weight: 500
   
 h2
   padding: 0.5em 20px
   color: #9F9F9F
+  font-weight: 500
   font-size: 16px
+  letter-spacing: 0.06em
   
 h3
   padding: 0em 20px 0.2em
   font-size: 42px
+  font-weight: 500
   color: #314760
   
 .buttons
@@ -34,6 +38,7 @@ h3
   padding: 2px 20px 22px
   
   button
+    outline: 0
     border: 1px solid #C2DDFD
     background: rgba(179,214,255, .18)
     border-radius: 7px
@@ -130,3 +135,48 @@ h3
   background-size: cover;
   background-attachment: local
   background-position: center bottom
+  
+
+.flights
+  display: flex
+  align-items: center
+  
+.fromFlight
+  border-right: 1px solid #E4E4E4
+  
+.fromFlight, .toFlight
+  margin-top: -36px
+  padding-top: 0.8em
+  padding-bottom: 0.6em
+  width: 50%
+  text-align: center
+  flex-basis: 0
+  flex-grow: 1
+  
+  
+.bookButton
+  outline: 0
+  display: flex
+  margin: 0.5em 20px
+  border: 1px solid #C2DDFD
+  background: rgba(179,214,255, .18)
+  border-radius: 7px
+  font-size: 18px
+  color: #4C6B90
+  padding: 1em 1em
+  font-weight: 600
+  cursor: pointer
+  text-align: center
+  font-weight: 500
+  justify-content: space-between
+  align-items: center
+  
+  &:hover
+    background: rgba(179,214,255, .38)
+    
+.expediaLogo
+  background-image: url("../../images/expedia.png")
+  background-size: cover
+  background-attachment: local
+  width: 25px
+  height: 25px
