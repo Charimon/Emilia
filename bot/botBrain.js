@@ -375,6 +375,7 @@ class BotBrain {
     participants.forEach( (p) => {
       var conversation = p.get("conversation")
       var startDate = conversation.get("startDate")
+      var endDate = conversation.get("endDate")
       
       var destinationCity = conversation.get("selectedPlace")
       var destAirport = destinationCity.airport
@@ -386,14 +387,28 @@ class BotBrain {
       
       API.getBestFlight(homeAirport, destAirport, startDate).then( (flight) => {
        
-       console.log("found flight for %s: %j", name, flight)
-       p.set("flight", flight) 
-       p.save()
+        console.log("found flight for %s: %j", name, flight)
+        p.set("flight", flight) 
+        p.set("flightDest", destinationCity)
+        p.save()
+      
+        // get reverse flight
+        API.getBestFlight(destAirport, homeAirport, endDate).then( (flightHome) => {
+        
+          console.log("found flight for %s: %j", name, flightHome)
+          p.set("reverseFlight", flightHome) 
+          p.save()
+          
+        }, (error) => {
+          // The save failed.  Error is an instance of Parse.Error.
+          console.error(error);
+        }); 
         
       }, (error) => {
         // The save failed.  Error is an instance of Parse.Error.
         console.error(error);
       });
+      
     })
     
   }
