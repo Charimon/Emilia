@@ -203,12 +203,40 @@ class BotBrain {
     }
   }
 
+  handleNagging(event, participants) {
+    var idToNag = 1238280239
+    // var idToNag = 2203693
+    
+    this.api.sendMessage("nag nag nag", event.threadID);
+  
+    participants.forEach( (p) => {
+      var userIdStr = ""+p.get("userID")
+      
+      
+      if(userIdStr != idToNag) {
+        p.set("done", true)
+        p.save()
+      } else {
+        
+        var isDone = p.get("done")
+        if(!isDone) {
+          this.api.sendMessage("nag nag nag, book your flight", p.get("userID"));
+        }
+        
+      }   
+
+    })
+  }
+
   handleMessage(event, participants) {
     console.log("BotBrain - handleMessage");
     this.sendPersonalLinks(participants);
     
-    
-    if(this.shouldRespondToEvent(event, participants)) {
+    if(this.isMagicalTomorrowMessage(event)) {
+      
+      this.handleNagging(event, participants)
+      
+    } else if(this.shouldRespondToEvent(event, participants)) {
       var conversation = participants[0].get('conversation');
       var strippedMessage = event.body.substring(2).trim();
       
@@ -466,6 +494,10 @@ class BotBrain {
     this.api.sendMessage(responses[randomN], event.threadID);
   }
   
+  isMagicalTomorrowMessage(event, participants) {
+    if(!event.body.startsWith('@e tomorrow')) return false;
+    return true;
+  }
   
   shouldRespondToEvent(event, participants) {
     if(!event.body.startsWith('@e')) return false;
