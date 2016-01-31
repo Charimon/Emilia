@@ -11,16 +11,13 @@ class Participant extends Parse.Object {
     var obj = new Participant();
     obj.set("userID", ""+userID);
     obj.set("conversation", conversation);
+    obj.set("sentLink", false);
     
     return obj;
   }
   
   constructor() {
     super("Participant")
-  }
-  
-  get userID() {
-    this.get("userID");
   }
     
 }

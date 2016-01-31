@@ -6,6 +6,7 @@ var fs = require('fs');
 var conf = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
 var BotBrain = require("./botBrain.js");
 var Conversation = require('./conversation.js')
+var ConvState = require('./conversationState.js')
 
 var user = conf.user;
 Parse.initialize(conf.parse.applicationId, conf.parse.jsKey);
@@ -48,12 +49,7 @@ Parse.initialize(conf.parse.applicationId, conf.parse.jsKey);
   
 // });
 
-var listening = (event, conversation_participants) => {
-  console.log("index.js - listning: event")
-  console.log(event)
-  console.log("index.js - listning: conversation")
-  console.log(conversation_participants)
-}
+var conversation_suggestion_timers = {}
 
 var botBrain = new BotBrain();
-botBrain.start(conf.user.email, conf.user.password, listening);
+botBrain.start(conf.user.email, conf.user.password);
