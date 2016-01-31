@@ -36,7 +36,7 @@ class Participant extends Parse.Object {
   }
   
   get dashboardUrl() {
-    return "http://www.localhost:8080/" + this.id
+    return "http://localhost:8080/" + this.id
   }
   
   constructor() {
