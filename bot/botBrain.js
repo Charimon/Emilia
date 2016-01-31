@@ -42,10 +42,10 @@ class BotBrain {
   
   constructor() {
     this.api = null;
-    this.conversations = {};
+    this.participantsForConvo = {};
   }
   
-  start(email, password, listen_handler) {
+  start(email, password) {
     
     var fbConnection = new Promise(function(resolve, reject){
       login({email: email, password: password}, function callback (err, api) {
@@ -61,61 +61,95 @@ class BotBrain {
       this.api = api
 
       api.listen( (err, event) => {
+        if(err) {
+          console.err(err)
+        } else {
+          console.log("BotBrain - received event: %j", event) 
+        }
+        
         var botId = this.api.getCurrentUserID();
         
         switch(event.type) {
-          case 'message':
-            var threadID = event.threadID;
-            if(this.conversations[threadID]) {
-              // converastion exists
-              console.log("found existing conversation for %s", threadID)        
-              
-              var convAndParticipants = this.conversations[threadID];
-              console.log("fetched conversation from cache")
-              console.log(convAndParticipants)  
-              listen_handler(event, convAndParticipants);
-              
-            } else {
-              // new conversation
-              
-              // werd FB bugs, have to filter out bot ID
-              var participantIds = event.participantIDs.filter( (p) => p != botId );
-              
-              var conversation = Conversation.createNew(botId, event)
-              
-              var participants = participantIds.map( (participantId) => {
-                return Participant.createNew(participantId, conversation);
-              });
-              
-              Parse.Object.saveAll(participants).then( (savedThings) => {
-              // The save was successful.
-                console.log("BotBrain.start - saved things")
-                console.log(savedThings)
-              
-                var conversation = savedThings[0].get("conversation")
-                var participants = savedThings
-                var convAndParticipants = { conversation:conversation, participants:participants };
-                this.conversations[threadID] = convAndParticipants
-              
-                console.log("BotBrain.start - saved conversation %s", threadID)      
-                console.log("BotBrain.start - recorded conversation into cache")
-                console.log(convAndParticipants)          
-                
-                listen_handler(event, convAndParticipants);
-              }, (error) => {
-              // The save failed.  Error is an instance of Parse.Error.
-                console.error(error)
-              });
-              
-            }
+          case 'message': this.handleEventAsMessage(botId, event)
         }
         
         
       });
     });
   }
-
   
+  handleEventAsMessage(botId, event) {
+    console.log("BotBrain - processing event as message");
+          
+    var threadID = event.threadID;
+    if(this.participantsForConvo[threadID]) {
+      // converastion exists
+      console.log("BotBrain - found existing conversation for thread %s", threadID);        
+      
+      var participants = this.participantsForConvo[threadID];                       
+      this.handleMessage(event, participants);
+      
+    } else {
+      console.log("BotBrain - creating new conversation for thread %s", threadID);        
+      // new conversation
+      
+      // werd FB bugs, have to filter out bot ID
+      var participantIds = event.participantIDs.filter( (p) => p != botId );
+      // create a conversation
+      var conversation = Conversation.createNew(botId, event);
+      // create the participants
+      var participants = participantIds.map( (participantId) => {
+        return Participant.createNew(participantId, conversation);
+      });
+      
+      console.log("BotBrain - saving new conversation for thread %s", threadID);
+      Parse.Object.saveAll(participants).then( (savedParticipants) => {
+        var savedConversation = savedParticipants[0].get("conversation");
+      
+        // record the participants into the cache
+        this.participantsForConvo[threadID] = savedParticipants;
+        console.log("BotBrain - recorded conversation %s into cache", threadID);
+        
+        this.handleMessage(event, savedParticipants);
+      }, (error) => {
+      // The save failed.  Error is an instance of Parse.Error.
+        console.error(error);
+      });
+      
+    }
+  }
+
+  handleMessage(message, participants) {
+    console.log("BotBrain - handleMessage");
+    this.sendPersonalLinks(participants)
+  }
+  
+  sendPersonalLinks(participants) {
+      
+    console.log("BotBrain - trying to sent personal links to %d participants", participants.length)
+    for(var participant of participants) {
+      console.log("testing participant " +participant.id)
+      
+      var didSentLink = participant.get("sentLink")
+      console.log("Participant %s sentLink %s", participant.id, didSentLink)
+      
+      if(!didSentLink) {
+        var userID = participant.get("userID")
+        var conversationThreadID = participant.get("conversation").get("threadID")
+        
+        console.log("BotBrain - preparint to sent personal link to " + userID)
+        
+        participant.set("sentLink", true)
+        participant.save()
+        this.api.sendMessage("Hey, here is your personalized dashboard for this trip: http://www.google.com/" + conversationThreadID + "/" + userID, userID)
+      
+        console.log("BotBrain - Sent personal link to " + userID)
+      }
+      
+    }
+   
+  }
+    
   
   // joinThread() {
   //   var participants = this.participantIds(event.participantIDs)

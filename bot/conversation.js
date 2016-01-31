@@ -2,6 +2,7 @@
 
 var Parse = require('parse/node');
 var Promise = require('promise');
+var ConvState = require('./conversationState.js')
 
 class Conversation extends Parse.Object {
   
@@ -10,6 +11,7 @@ class Conversation extends Parse.Object {
     
     var threadIDStr = ""+(convEvent.threadID)
     obj.set('threadID', threadIDStr)
+    obj.set('state', ConvState.newTrip)
        
     return obj
   }
@@ -20,6 +22,10 @@ class Conversation extends Parse.Object {
    
   get threadID() {
     return this.get("threadID");
+  }
+  
+  get state() {
+    return this.get("state");
   }
   
   static findByThreadID(threadID) {
