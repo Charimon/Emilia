@@ -6,7 +6,19 @@ import {User} from '../user/user.component';
 @Component({
     selector: 'my-app',
     bindings: [ParseManager],
-    template: '<h1>My First App {{participant.objectId}}</h1>'
+    template: `
+      <h1>Group Trip: Michael, Andrew, 5 others. {{participant.objectId}}</h1>
+      <div class="section">faces</div>
+      <div class="section">
+        <h2>WHEN</h2>
+      </div>
+      <div class="section">
+        <h2>WHERE</h2>
+      </div>
+      <div class="section">
+        <h2>FLY</h2>
+      </div>
+    `
 })
 export class AppComponent {
   participant: any = {};

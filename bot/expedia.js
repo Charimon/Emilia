@@ -4,6 +4,8 @@ var fs = require('fs');
 var airports = require('airports');
 var lunr = require('lunr');
 var http = require('request-promise-json');
+var Date = require('datejs');
+var Promise = require('promise');
 
 
 var conf = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
@@ -103,6 +105,10 @@ class API {
   
   static getHotelSpreadCity(city, radiusKM, fromDate, toDate) {
     return API.getHotelSpread(city.lat, city.lng, radiusKM, fromDate, toDate);
+  }
+  
+  static getBestDatesForCity(city) {
+    
   }
 }
 

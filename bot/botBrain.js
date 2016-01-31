@@ -186,19 +186,21 @@ class BotBrain {
         
         this.api.sendMessage(message, event.threadID);
         conversation.set('sentWelcome', true);
-        conversation.set('sentPlaces', true);
+        conversation.set('sentCities', true);
         conversation.save();
       } else {
-        if(conversation.get('sentPlaces') && !conversation.get('selectedPlaces')) {
+        if(conversation.get('sentCities') && !conversation.get('selectedCity')) {
           var firstChar = parseInt(strippedMessage.substring(0,1));
           if(!isNaN(firstChar) && firstChar >= 0 && firstChar < API.getCities().length) {
-            this.api.sendMessage(`Sweet, we're going to ${API.getCities()[firstChar].name}`, event.threadID);
-            conversation.set('selectedPlaces', true);
+            this.api.sendMessage(`Sweet, we're going to ${API.getCities()[firstChar - 1].name}`, event.threadID);
+            conversation.set('selectedCity', true);
             conversation.save();
+            // API.getBestDatesForCity()
           } else {
             this.whittyResponse(event);
           }
-        } else if(conversation.get('sentPlaces') && conversation.get('selectedPlaces') && !conversation.get('sentDates')){
+        } else if(conversation.get('sentCities') && conversation.get('selectedCity') && !conversation.get('sentDates')){
+          
           // this.api.sendMessage(message, event.threadID);
         }
       }

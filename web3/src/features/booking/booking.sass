@@ -1,0 +1,61 @@
+@keyframes dotAnimation
+  0%
+    opacity: 0.2
+  50%
+    opacity: 1
+  100% 
+    opacity: 0.2
+
+
+
+.booking
+  background: #F1F8FF
+  height: 100%
+  
+  h1
+    font-size: 42px
+    font-weight: 600
+    color: #314760
+    text-align: center
+    max-width: 70%
+    margin: 0 auto
+    padding-bottom: 0.7em
+    
+  .dots
+    display: flex
+    justify-content: space-between
+    align-items: center
+    margin: 0 auto
+    width: 50%
+    
+    .dot
+      width: 20px
+      height: 20px
+      border-radius: 50%
+      background: #3A486D
+      opacity: .2
+       
+      animation-direction: alternate;
+      animation-timing-function: ease-out;
+      animation-fill-mode: bot;
+      animation: dotAnimation 3s infinite;
+      
+      &:nth-child(1)
+        animation-delay: 0s;
+      &:nth-child(2)
+        animation-delay: 0.5s;
+      &:nth-child(3)
+        animation-delay: 1s;  
+      &:nth-child(4)
+        animation-delay: 1.5s;
+    
+  .emilia
+    background-image: url("../../images/emilia.png")
+    background-size: cover;
+    background-attachment: local
+    background-position: center top
+    height: 50%;
+    position: absolute
+    bottom: 0
+    left: 0
+    right: 0
