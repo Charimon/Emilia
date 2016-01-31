@@ -36,7 +36,7 @@ class Participant extends Parse.Object {
   }
   
   get dashboardUrl() {
-    return "http://emilia.expedia.com/" + this.id
+    return "http://www.localhost:8080/" + this.id
   }
   
   constructor() {

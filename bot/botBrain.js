@@ -88,6 +88,8 @@ class BotBrain {
   }
   
   isAllowedFBID(fbId) {
+    return true
+    
     if(fbId == "1238280239" || fbId == "1238280290" || fbId == "2203693") {
       return true
     } else {
@@ -97,6 +99,8 @@ class BotBrain {
   }
   
   hasAllowedFBID(fbIds) {
+    return true
+    
     var allowed = fbIds.filter( (id) => this.isAllowedFBID(id) )
     if(allowed.length > 0) {
       return true
@@ -120,8 +124,10 @@ class BotBrain {
       var addedParticipantIds = event.logMessageData.added_participants.map ( (fbStr) => { return fbStr.split(":")[1] })
       console.log("added participants: %j", addedParticipantIds)
       
+      var threadID = event.threadID;
+      
       if(addedParticipantIds.length == 1 && addedParticipantIds[0] == botId) {
-        this.api.sendMessage("Hey gang! Sounds like you want to take a trip. Where are you off to? If you need my help, type ‘@e’", event.threadID);
+        this.api.sendMessage("Hey gang! Sounds like you want to take a trip. Where are you off to? If you need my help, type ‘@e’.   \nAlso, here’s a link to your scratchpad: " +threadID , event.threadID);
         return;
       }
       
@@ -141,7 +147,7 @@ class BotBrain {
           Participant.findByConversationId(conversationId).then( (refetchedParticipants) => {
             console.log("BotBrain - Updating participants for thread %s with %j", threadID, refetchedParticipants)
             this.participantsForConvo[threadID] = refetchedParticipants
-            this.sendPersonalLinks(refetchedParticipants)
+            // this.sendPersonalLinks(refetchedParticipants)
           })
           
           
@@ -205,7 +211,7 @@ class BotBrain {
 
   handleNagging(event, participants) {
     var idToNag = 1238280239
-    // var idToNag = 2203693
+    var idToNag = 2203693
     
     this.api.sendMessage("nag nag nag", event.threadID);
   
@@ -226,6 +232,29 @@ class BotBrain {
       }   
 
     })
+  }
+  
+  suggestWeekends(event, conversation, selectedCity) {
+    console.log("BotBrain - suggestWeekends: %j", selectedCity);
+    
+    this.api.sendMessage(`Sweet!`, event.threadID);
+      conversation.set('selectedPlace', selectedCity)
+      conversation.save();
+      
+      setTimeout( () => {
+        
+        var weekends = Weekend.nextGoodWeeknds()   
+        
+        var message = `Here are some next good weekends to go to ${conversation.get('selectedPlace').name}`
+        message += "\n\n"; 
+        message += weekends.map( (w, i) => { 
+          return `\n[${i+1}]    ${w.pretty}`;
+        } ).join(" ");
+        message += "\n\rOr just type in your own range."
+        
+        this.api.sendMessage(message, event.threadID);
+      }, 500)
+    
   }
 
   handleMessage(event, participants) {
@@ -260,7 +289,7 @@ class BotBrain {
           
         });
         
-        var message = "Yep yep, I’m right here. Just ‘@e’ any time you want to address me. Here are options for places you might want to go. I'm going to send all of you some more info in a separate chat to help you decide. Just click the link";
+        var message = "Yep yep, I’m right here. Just ‘@e’ any time you want to address me. Here are options for places you might want to go. I'm going to send all of you some more info in a separate chat to help you decide.  Remember to click the link!";
         message += "\n\n";
         message += API.getCities().map((c, i) => {
           return `\n[${i+1}]     ${c.name} (${c.price})`;
@@ -279,26 +308,37 @@ class BotBrain {
         var firstChar = parseInt(strippedMessage.substring(0,1));
         if(!isNaN(firstChar) && firstChar > 0 && firstChar <= API.getCities().length) {
           var selectedCity = API.getCities()[firstChar-1]
-          this.api.sendMessage(`Sweet!`, event.threadID);
-          conversation.set('selectedPlace', selectedCity)
-          conversation.save();
-          
-          setTimeout( () => {
-            
-            var weekends = Weekend.nextGoodWeeknds()   
-            
-            var message = `Here are some next good weekends to go to ${conversation.get('selectedPlace').name}`
-            message += "\n\n"; 
-            message += weekends.map( (w, i) => { 
-              return `\n[${i+1}]    ${w.pretty}`;
-            } ).join(" ");
-            message += "\n\rOr just type in your own range."
-            
-            this.api.sendMessage(message, event.threadID);
-          }, 500)
+          this.suggestWeekends(event, conversation, selectedCity)
           
         } else {
-          this.whittyResponse(event);
+          var query = strippedMessage.toLowerCase()
+          console.log("BotBrain - place query:" + query)
+          
+          var simplifiedCities = API.getCities().map( (city, i) => {
+            return { name:city.name.toLowerCase(), index:i}
+          })
+          
+          console.log("BotBrain - simplified cities: %j", simplifiedCities)
+          
+          var match = null
+          for( var city of API.getCities()) {
+            var lowerName = city.name.toLowerCase()
+            console.log("BotBrain - matching '%s' against %s", query, lowerName)
+            if(lowerName.startsWith(query)) {
+              console.log("BotBrain - catches '%j'", city)
+              match = city
+            }
+          }
+          
+          if(match) {
+            var selectedCity = match
+            this.suggestWeekends(event, conversation, selectedCity)
+            
+          } else {
+            this.whittyResponse(event);
+          }
+          
+
         }
         
         return
@@ -372,6 +412,7 @@ class BotBrain {
                     
         } else {
           this.whittyResponseHotel(event);
+          this.sendHotelSuggestions(event, conversation)
         }
        
         return 
@@ -522,7 +563,7 @@ class BotBrain {
         participant.set("sentLink", true)
         participant.save()
         
-        this.api.sendMessage("Hey, your friend invited you to plane a trip with Expedia, here is your personalized dashboard for this trip: " + participant.dashboardUrl, userID)
+        this.api.sendMessage("Hey, your friend invited you to plane a trip with Expedia, here is your personalized trip url: " + participant.dashboardUrl, userID)
       
         console.log("BotBrain - Sent personal link to " + userID)
       }

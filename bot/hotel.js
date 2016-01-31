@@ -19,7 +19,8 @@ class Hotel {
   }
   
   prettyLine() {
-    return `${this.name} (${this.starRating} stars) - $${this.totalPrice}\n${this.detailUrl}\n`
+    // return `${this.name} (${this.starRating} stars) - $${this.totalPrice}\n${this.detailUrl}\n`
+    return `${this.name} (${this.starRating} stars) - $${this.totalPrice}`
   }
   
   
