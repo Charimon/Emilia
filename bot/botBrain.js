@@ -8,6 +8,10 @@ var Participant = require('./participant.js')
 
 var login = require("facebook-chat-api");
 var API = require("./expedia")
+var Chrono = require('chrono-node')
+var DateFormat = require('dateformat');
+var DateMath = require('date-math');
+var Weekend = require('./weekend.js');
 
 // function BotBrain(api, conf) {
 //   this.name = "emilia";
@@ -38,6 +42,7 @@ var API = require("./expedia")
 //   });
 //   return _botBrainPromise;
 // }
+
 
 class BotBrain {
   
@@ -188,21 +193,116 @@ class BotBrain {
         conversation.set('sentWelcome', true);
         conversation.set('sentPlaces', true);
         conversation.save();
-      } else {
-        if(conversation.get('sentPlaces') && !conversation.get('selectedPlaces')) {
-          var firstChar = parseInt(strippedMessage.substring(0,1));
-          if(!isNaN(firstChar) && firstChar >= 0 && firstChar < API.getCities().length) {
-            this.api.sendMessage(`Sweet, we're going to ${API.getCities()[firstChar].name}`, event.threadID);
-            conversation.set('selectedPlaces', true);
-            conversation.save();
-          } else {
-            this.whittyResponse(event);
-          }
-        } else if(conversation.get('sentPlaces') && conversation.get('selectedPlaces') && !conversation.get('sentDates')){
-          // this.api.sendMessage(message, event.threadID);
+        return 
+      } 
+        
+      console.log("BotBrain - choosing place")
+      if(conversation.get('sentPlaces') && !conversation.get('selectedPlace')) {
+        var firstChar = parseInt(strippedMessage.substring(0,1));
+        if(!isNaN(firstChar) && firstChar > 0 && firstChar <= API.getCities().length) {
+          var selectedCity = API.getCities()[firstChar-1]
+          this.api.sendMessage(`Sweet!`, event.threadID);
+          conversation.set('selectedPlace', selectedCity)
+          conversation.save();
+          
+          setTimeout( () => {
+            
+            var weekends = Weekend.nextGoodWeeknds()   
+            
+            var message = `Here are some next good weekends to go to ${conversation.get('selectedPlace').name}`
+            message += "\n\n"; 
+            message += weekends.map( (w, i) => { 
+              return `\n[${i+1}]    ${w.pretty}`;
+            } ).join(" ");
+            message += "\n\rOr just type in your own range."
+            
+            this.api.sendMessage(message, event.threadID);
+          }, 1000)
+          
+        } else {
+          this.whittyResponse(event);
         }
+        
+        return
+      } 
+      
+      console.log("BotBrain - choosing date range")
+      if(!(conversation.get('startDate') && conversation.get('endDate')) ){
+        // parse the date range
+        
+        console.log(`BotBrain - parsing '${event.body}' for date ranges`)
+        
+        let body = event.body
+        
+        var weekends = Weekend.nextGoodWeeknds()   
+        var strippedMessage = event.body.substring(2).trim();
+        var firstChar = parseInt(strippedMessage.substring(0,1));
+        if(!isNaN(firstChar) && firstChar > 0 && firstChar <= weekends.length) {
+          var picked = weekends[firstChar - 1]
+          var startDate = picked.start
+          var endDate = picked.end
+          
+          this.setTripDates(event, conversation, startDate, endDate)
+          return 
+        }
+        
+        var parseResults = Chrono.parse(event.body)
+        if(parseResults.length <= 0) {
+          this.api.sendMessage(`Sorry, I could not quite understand your date range`, event.threadID);
+          return
+        }
+        
+        var firstResult = parseResults[0]
+        var start = firstResult.start
+        var end = firstResult.end
+        if(!start || !end) {
+          this.api.sendMessage(`Sorry, I could not quite understand your date range`, event.threadID);
+          return
+        }
+        
+        var startDate = start.date()
+        var endDate = end.date()
+        this.setTripDates(event, conversation, startDate, endDate)
+        return
       }
+      
+      if(!(conversation.get('hotelId'))) {
+        
+      }
+
     }
+  }
+  
+  setTripDates(event, conversation, startDate, endDate) {
+    conversation.set('startDate', startDate)
+    conversation.set('endDate', endDate)
+    conversation.save()
+    
+    this.api.sendMessage(`From ${DateFormat(startDate, "mmmm dS")} to ${DateFormat(endDate, "mmmm dS")} it is`, event.threadID);
+  
+    this.sendHotelSuggestions(event, conversation)
+  }
+  
+  sendHotelSuggestions(event, conversation) {    
+    console.log("in hotel fn")
+    
+    var city = conversation.get('selectedPlace')
+    var from = conversation.get('startDate')
+    var to = conversation.get('endDate')
+    
+    console.log("Looking for hotels in %j from %s to %s", city, from, to)
+        
+    this.api.sendMessage(`Looking for some hotels around ${conversation.get('selectedPlace').name}...`, event.threadID);
+        
+    API.getHotelSpreadCity(city, 10, from, to).then ( (hotels) => {
+      console.log("Hotel %j", hotels)
+      this.api.sendMessage(`I think you will like these:`, event.threadID);
+    }, (error) => {
+      // The save failed.  Error is an instance of Parse.Error.
+      console.error(error);
+    });
+    
+
   }
   
   whittyResponse(event) {
