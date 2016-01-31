@@ -82,6 +82,7 @@ class BotBrain {
   handleEventAsEvent(botId, event) {
     
     if(event.logMessageType == "log:subscribe") {
+      // handle addition of a new uesr
       
       var addedParticipantIds = event.logMessageData.added_participants.map ( (fbStr) => { return fbStr.split(":")[1] })
       console.log("added participants: %j", addedParticipantIds)
@@ -89,20 +90,20 @@ class BotBrain {
       var threadID = event.threadID;
       var participants = this.participantsForConvo[threadID]
       if(participants) {
-        var conversation = participants[0].get("conversation")
+        var conversationId = participants[0].get("conversation").id
+        var stubConversation = new Conversation()
+        stubConversation.id = conversationId
         
         var newParticipants = addedParticipantIds.map( (participantId) => {
-
-          return Participant.createNew(participantId, conversation);
+          return Participant.createNew(participantId, stubConversation);
         });
         console.log("BotBrain - created %d Participant objects for the invited users %j", newParticipants.length, addedParticipantIds)
-        Parse.Object.saveAll(participants).then( (savedParticipants) => {
+        Parse.Object.saveAll(newParticipants).then( (savedParticipants) => {
           
-          Participant.findByConversationId(conversation.id).then( (refetchedParticipants) => {
+          Participant.findByConversationId(conversationId).then( (refetchedParticipants) => {
             console.log("BotBrain - Updating participants for thread %s with %j", threadID, refetchedParticipants)
             this.participantsForConvo[threadID] = refetchedParticipants
-          
-            // this.sendPersonalLinks(refetchedParticipants)
+            this.sendPersonalLinks(refetchedParticipants)
           })
           
           
