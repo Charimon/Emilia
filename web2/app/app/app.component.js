@@ -21,14 +21,26 @@ System.register(['angular2/core', '../parseManager/ParseManager'], function(expo
         execute: function() {
             AppComponent = (function () {
                 function AppComponent(ParseManager) {
+                    var _this = this;
                     this.ParseManager = ParseManager;
-                    ParseManager.test();
+                    this.participant = {};
+                    this.participants = [];
+                    var userId = window.location.pathname.split('/')[1];
+                    var participant = ParseManager.getParticipant(userId);
+                    participant.then(function (p) {
+                        _this.participant = p;
+                    });
+                    participant.then(function (p) {
+                        return ParseManager.getParticipantsInConvo(p.get('conversation').id);
+                    }).then(function (people) {
+                        _this.participants = people;
+                    });
                 }
                 AppComponent = __decorate([
                     core_1.Component({
                         selector: 'my-app',
                         bindings: [ParseManager_1.ParseManager],
-                        template: '<h1>My First Angular 2 App</h1>'
+                        template: '<h1>My First App {{participant.objectId}}</h1>'
                     }), 
                     __metadata('design:paramtypes', [ParseManager_1.ParseManager])
                 ], AppComponent);
