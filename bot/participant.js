@@ -3,7 +3,7 @@
 var Parse = require('parse/node');
 var Promise = require('promise');
 const assert = require('assert');
-
+var Conversation = require('./conversation.js')
 
 class Participant extends Parse.Object {
   
@@ -18,6 +18,16 @@ class Participant extends Parse.Object {
   
   constructor() {
     super("Participant")
+  }
+    
+  static findByConversationId(conversationId) {
+    var converstaion = new Conversation()
+    converstaion.id = conversationId
+    
+    var q = new Parse.Query(Participant);
+    q.include("conversation")
+    q.equalTo("conversation", converstaion);
+    return q.find();
   }
     
 }

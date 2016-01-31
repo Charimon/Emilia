@@ -71,11 +71,51 @@ class BotBrain {
         
         switch(event.type) {
           case 'message': this.handleEventAsMessage(botId, event)
+          case 'event': this.handleEventAsEvent(botId, event)
         }
         
         
       });
     });
+  }
+  
+  handleEventAsEvent(botId, event) {
+    
+    if(event.logMessageType == "log:subscribe") {
+      
+      var addedParticipantIds = event.logMessageData.added_participants.map ( (fbStr) => { return fbStr.split(":")[1] })
+      console.log("added participants: %j", addedParticipantIds)
+      
+      var threadID = event.threadID;
+      var participants = this.participantsForConvo[threadID]
+      if(participants) {
+        var conversation = participants[0].get("conversation")
+        
+        var newParticipants = addedParticipantIds.map( (participantId) => {
+
+          return Participant.createNew(participantId, conversation);
+        });
+        console.log("BotBrain - created %d Participant objects for the invited users %j", newParticipants.length, addedParticipantIds)
+        Parse.Object.saveAll(participants).then( (savedParticipants) => {
+          
+          Participant.findByConversationId(conversation.id).then( (refetchedParticipants) => {
+            console.log("BotBrain - Updating participants for thread %s with %j", threadID, refetchedParticipants)
+            this.participantsForConvo[threadID] = refetchedParticipants
+          
+            // this.sendPersonalLinks(refetchedParticipants)
+          })
+          
+          
+        })
+        
+        
+      } else {
+        console.error("Added partiticipant %j to thread %s but could not find the thread in the cache", addedParticipants, threadID)
+      }
+      
+    } 
+    
+    
   }
   
   handleEventAsMessage(botId, event) {
@@ -141,7 +181,7 @@ class BotBrain {
         
         participant.set("sentLink", true)
         participant.save()
-        this.api.sendMessage("Hey, here is your personalized dashboard for this trip: http://www.google.com/" + conversationThreadID + "/" + userID, userID)
+        this.api.sendMessage("Hey, your friend invited you to plane a trip with Expedia, here is your personalized dashboard for this trip: http://www.google.com/" + conversationThreadID + "/" + userID, userID)
       
         console.log("BotBrain - Sent personal link to " + userID)
       }
