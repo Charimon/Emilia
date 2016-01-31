@@ -40,7 +40,7 @@ System.register(['angular2/core', '../parseManager/ParseManager'], function(expo
                     core_1.Component({
                         selector: 'my-app',
                         bindings: [ParseManager_1.ParseManager],
-                        template: '<h1>My First App {{participant.objectId}}</h1>'
+                        template: "\n      <h1>Group Trip: Michael, Andrew, 5 others. {{participant.objectId}}</h1>\n      <div class=\"section\">faces</div>\n      <div class=\"section\">\n        <h2>WHEN</h2>\n      </div>\n      <div class=\"section\">\n        <h2>WHERE</h2>\n      </div>\n      <div class=\"section\">\n        <h2>FLY</h2>\n      </div>\n    "
                     }), 
                     __metadata('design:paramtypes', [ParseManager_1.ParseManager])
                 ], AppComponent);
