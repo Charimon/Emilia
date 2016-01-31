@@ -62,7 +62,7 @@ class BotBrain {
 
       api.listen( (err, event) => {
         if(err) {
-          console.err(err)
+          console.error(`===ERROR: ${err}`)
         } else {
           console.log("BotBrain - received event: %j", event) 
         }
@@ -159,9 +159,21 @@ class BotBrain {
     }
   }
 
-  handleMessage(message, participants) {
+  handleMessage(event, participants) {
     console.log("BotBrain - handleMessage");
-    this.sendPersonalLinks(participants)
+    this.sendPersonalLinks(participants);
+    
+    
+    if(this.shouldRespondToEvent(event, participants)) {
+      this.api.sendMessage("hio " + event.body, event.threadID);
+      //checks to make sure you start your conversations with @e 
+    }
+  }
+  
+  shouldRespondToEvent(event, participants) {
+    debugger
+    if(!event.body.startsWith('@e')) return false;
+    return true;
   }
   
   sendPersonalLinks(participants) {
