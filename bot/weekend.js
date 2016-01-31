@@ -11,9 +11,10 @@ class Weekend {
     
     var sundayWeekend = DateMath.week.shift(sunday, weeksFromNow)
     var fridayWeekend = DateMath.day.shift(sundayWeekend,-2)
+    var mondayWeekend = DateMath.day.shift(sundayWeekend,1)
     
     this.start = fridayWeekend
-    this.end = sundayWeekend
+    this.end = mondayWeekend
   
   }
   
