@@ -11,12 +11,17 @@
   "license": "ISC",
   "dependencies": {
     "color": "^0.11.1",
+    "history": "^1.17.0",
     "immutable": "^3.7.6",
+    "parse": "^1.7.0",
+    "parse-react": "^0.5.0",
     "radium": "^0.16.5",
     "react": "^0.14.6",
+    "react-cookie": "^0.4.3",
     "react-dom": "^0.14.6",
     "react-redux": "^4.0.6",
     "react-retina-image": "^2.0.0",
+    "react-router": "^1.0.3",
     "redux": "^3.0.6",
     "redux-thunk": "^1.0.3"
   },
