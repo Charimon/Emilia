@@ -14,17 +14,28 @@ export default class HomeController {
     this.names = null;
     this.people = [];
     
-    this.updateSelf();
+    this.poll();
   }
   
   updateSelf() {
     if(this.$stateParams.participantId != null ) {
       this.api.getParticipantsInConvo(this.$stateParams.participantId).then((participants) => {
         var names = participants.map((p) => p.get('fbData').firstName ).sort().join(", ");
-        this.$timeout(() => {
-          this.people = participants;
-          this.names = names;
-        })
+        if(this.people == null || this.people.length != participants.length) {
+          this.$timeout(() => {
+            this.people = participants;
+            this.names = names;
+          })
+        } else {
+          var pIds = participants.map((p) => p.id);
+          var peopleIds = this.people.map((p) => p.id);
+          if(pIds.sort().join() != peopleIds.sort().join()) {
+            this.$timeout(() => {
+              this.people = participants;
+              this.names = names;
+            });
+          }
+        }
       });
       
       this.api.getParticipant(this.$stateParams.participantId).then((participant) => {
@@ -37,6 +48,12 @@ export default class HomeController {
       })
     }
   }
+  
+  poll() {
+    this.updateSelf()
+    this.$timeout(this.poll.bind(this), 2000);
+  }
+
 }
 
 HomeController.$inject = ['$stateParams', 'api', '$timeout'];
