@@ -25,19 +25,20 @@ var foundId = found[0].ref;
 // console.log(airports[foundId]);
 
 class City {
-  constructor(name, lat, lng, airport) {
+  constructor(name, lat, lng, airport, price) {
     this.name = name;
     this.lat = lat;
     this.lng = lng;
     this.airport = airport;
+    this.price = price;
   }
   
   static getMostPopularCities() {
     return [
-      new City("San Diego, CA", 32.720177, -117.167469, "SAN"),
-      new City("Whistler, BC, Canada", 50.115604, -122.958129, "YVR"),
-      new City("London, UK", 51.509224, -0.125122, "LHR"),
-      new City("Puerto Rico, USA", 18.393483, -66.098761, "SJU")
+      new City("San Diego, CA", 32.720177, -117.167469, "SAN", "$"),
+      new City("Whistler, BC, Canada", 50.115604, -122.958129, "YVR", "$$"),
+      new City("London, UK", 51.509224, -0.125122, "LHR", "$$$"),
+      new City("Puerto Rico, USA", 18.393483, -66.098761, "SJU", "$$")
     ]
   }
 }
@@ -104,3 +105,5 @@ class API {
     return API.getHotelSpread(city.lat, city.lng, radiusKM, fromDate, toDate);
   }
 }
+
+module.exports = API;

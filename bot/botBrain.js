@@ -7,6 +7,7 @@ var Conversation = require('./conversation.js')
 var Participant = require('./participant.js')
 
 var login = require("facebook-chat-api");
+var API = require("./expedia")
 
 // function BotBrain(api, conf) {
 //   this.name = "emilia";
@@ -62,7 +63,8 @@ class BotBrain {
 
       api.listen( (err, event) => {
         if(err) {
-          console.error(`===ERROR: ${err}`)
+          console.error(`===ERROR: ${err}`);
+          return;
         } else {
           console.log("BotBrain - received event: %j", event) 
         }
@@ -86,6 +88,11 @@ class BotBrain {
       
       var addedParticipantIds = event.logMessageData.added_participants.map ( (fbStr) => { return fbStr.split(":")[1] })
       console.log("added participants: %j", addedParticipantIds)
+      
+      if(addedParticipantIds.length == 1 && addedParticipantIds[0] == botId) {
+        this.api.sendMessage("Hey gang! Sounds like you want to take a trip. Where are you off to? If you need my help, type ‘@e’", event.threadID);
+        return;
+      }
       
       var threadID = event.threadID;
       var participants = this.participantsForConvo[threadID]
@@ -111,7 +118,7 @@ class BotBrain {
         
         
       } else {
-        console.error("Added partiticipant %j to thread %s but could not find the thread in the cache", addedParticipants, threadID)
+        console.error("Added partiticipant to thread %s but could not find the thread in the cache", threadID)
       }
       
     } 
@@ -166,13 +173,46 @@ class BotBrain {
     
     
     if(this.shouldRespondToEvent(event, participants)) {
-      this.api.sendMessage("hio " + event.body, event.threadID);
-      //checks to make sure you start your conversations with @e 
+      var conversation = participants[0].get('conversation');
+      var strippedMessage = event.body.substring(2).trim();
+      
+      if(!conversation.get('sentWelcome')) {
+        var message = "Yep yep, I’m right here. Just ‘@e’ any time you want to address me. Here are options for places you might want to go. I'm going to send all of you some more info in a separate chat to help you decide. Just click the link";
+        message += "\n\n";
+        message += API.getCities().map((c, i) => {
+          return `\n[${i+1}]     ${c.name} (${c.price})`;
+        }).join(" ");
+        message += "\n\rSelect a number or type ‘m’ for more."
+        
+        this.api.sendMessage(message, event.threadID);
+        conversation.set('sentWelcome', true);
+        conversation.set('sentPlaces', true);
+        conversation.save();
+      } else {
+        if(conversation.get('sentPlaces') && !conversation.get('selectedPlaces')) {
+          var firstChar = parseInt(strippedMessage.substring(0,1));
+          if(!isNaN(firstChar) && firstChar >= 0 && firstChar < API.getCities().length) {
+            this.api.sendMessage(`Sweet, we're going to ${API.getCities()[firstChar].name}`, event.threadID);
+            conversation.set('selectedPlaces', true);
+            conversation.save();
+          } else {
+            this.whittyResponse(event);
+          }
+        } else {
+          
+        }
+      }
     }
   }
   
+  whittyResponse(event) {
+    var strippedMessage = event.body.substring(2).trim();
+    var responses = ["You wanna go where, mate?!"];
+    var randomN = Math.floor((Math.random() * responses.length));
+    this.api.sendMessage(responses[randomN], event.threadID);
+  }
+  
   shouldRespondToEvent(event, participants) {
-    debugger
     if(!event.body.startsWith('@e')) return false;
     return true;
   }
