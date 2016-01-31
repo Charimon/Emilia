@@ -127,7 +127,7 @@ class BotBrain {
       var threadID = event.threadID;
       
       if(addedParticipantIds.length == 1 && addedParticipantIds[0] == botId) {
-        this.api.sendMessage("Hey gang! Sounds like you want to take a trip. Where are you off to? If you need my help, type ‘@e’.   \nAlso, here’s a link to your scratchpad: " +threadID , event.threadID);
+        this.api.sendMessage("Hey gang! Sounds like you want to take a trip. Where are you off to? If you need my help, type ‘@e’.", event.threadID);
         return;
       }
       
@@ -213,7 +213,7 @@ class BotBrain {
     // var idToNag = 1238280239
     var idToNag = 2203693
     
-    this.api.sendMessage("nag nag nag", event.threadID);
+    this.api.sendMessage("Hey gang, Ash still has not booked his flight. I sent him a personal reminder. Please nudge him too.", event.threadID);
   
     participants.forEach( (p) => {
       var userIdStr = ""+p.get("userID")
@@ -226,7 +226,7 @@ class BotBrain {
         
         var isDone = p.get("done")
         if(!isDone) {
-          this.api.sendMessage("nag nag nag, book your flight", p.get("userID"));
+          this.api.sendMessage("Hey Ash, book your flight, everybody else has, your friends are waiting.", p.get("userID"));
         }
         
       }   
@@ -261,7 +261,9 @@ class BotBrain {
     console.log("BotBrain - handleMessage");
     this.sendPersonalLinks(participants);
     
-    if(this.isMagicalTomorrowMessage(event)) {
+    if (this.isRequestForSupport(event)) {
+      this.api.sendMessage("Standby... connecting to Exedia customer service...", event.threadID);
+    } else if(this.isMagicalTomorrowMessage(event)) {
       
       this.handleNagging(event, participants)
       
@@ -538,6 +540,13 @@ class BotBrain {
   isMagicalTomorrowMessage(event, participants) {
     if(!event.body.startsWith('@e tomorrow')) return false;
     return true;
+  }
+  
+  isRequestForSupport(event) {
+    if(event.body.startsWith('@e!') || event.body.startsWith('@e help')) {
+      return true;
+    } 
+    return false;
   }
   
   shouldRespondToEvent(event, participants) {
