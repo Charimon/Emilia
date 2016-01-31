@@ -48,9 +48,11 @@ Parse.initialize(conf.parse.applicationId, conf.parse.jsKey);
   
 // });
 
-var listening = (event, conversation) => {
+var listening = (event, conversation_participants) => {
+  console.log("index.js - listning: event")
   console.log(event)
-  console.log(conversation.participants)
+  console.log("index.js - listning: conversation")
+  console.log(conversation_participants)
 }
 
 var botBrain = new BotBrain();

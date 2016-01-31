@@ -70,8 +70,10 @@ class BotBrain {
               // converastion exists
               console.log("found existing conversation for %s", threadID)        
               
-              var conversation = this.conversations[threadID];
-              listen_handler(event, conversation);
+              var convAndParticipants = this.conversations[threadID];
+              console.log("fetched conversation from cache")
+              console.log(convAndParticipants)  
+              listen_handler(event, convAndParticipants);
               
             } else {
               // new conversation
@@ -87,14 +89,19 @@ class BotBrain {
               
               Parse.Object.saveAll(participants).then( (savedThings) => {
               // The save was successful.
-                var conversation = savedThings[0].conversation
+                console.log("BotBrain.start - saved things")
+                console.log(savedThings)
+              
+                var conversation = savedThings[0].get("conversation")
                 var participants = savedThings
                 var convAndParticipants = { conversation:conversation, participants:participants };
                 this.conversations[threadID] = convAndParticipants
               
+                console.log("BotBrain.start - saved conversation %s", threadID)      
+                console.log("BotBrain.start - recorded conversation into cache")
+                console.log(convAndParticipants)          
+                
                 listen_handler(event, convAndParticipants);
-              
-                console.log("saved conversation: %j", savedThings)        
               }, (error) => {
               // The save failed.  Error is an instance of Parse.Error.
                 console.error(error)
