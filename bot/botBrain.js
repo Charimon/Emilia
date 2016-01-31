@@ -308,6 +308,8 @@ class BotBrain {
             }).join("")
             
             this.api.sendMessage(message, event.threadID);
+            
+            this.getFligts(participants)
           }, 500)
                     
         } else {
@@ -366,6 +368,34 @@ class BotBrain {
     });
     
 
+  }
+  
+  getFligts(participants) {
+    
+    participants.forEach( (p) => {
+      var conversation = p.get("conversation")
+      var startDate = conversation.get("startDate")
+      
+      var destinationCity = conversation.get("selectedPlace")
+      var destAirport = destinationCity.airport
+      
+      var homeCity = p.get("homeCity")
+      var homeAirport = homeCity.airport
+      
+      var name = p.get("fbData").firstName
+      
+      API.getBestFlight(homeAirport, destAirport, startDate).then( (flight) => {
+       
+       console.log("found flight for %s: %j", name, flight)
+       p.set("flight", flight) 
+       p.save()
+        
+      }, (error) => {
+        // The save failed.  Error is an instance of Parse.Error.
+        console.error(error);
+      });
+    })
+    
   }
   
   whittyResponse(event) {
