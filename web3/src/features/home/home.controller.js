@@ -31,8 +31,8 @@ export default class HomeController {
         var names = participants.map((p) => p.get('fbData').firstName ).sort().join(", ");
         if(this.people == null || this.people.length != participants.length) {
           this.doneMap = {};
-            for(var p of this.people) {
-              this.doneMap[p.id] = p.get('isDone');
+            for(var p of participants) {
+              this.doneMap[p.id] = p.get('done');
             }
           this.$timeout(() => {
             this.people = participants;
@@ -43,13 +43,28 @@ export default class HomeController {
           var peopleIds = this.people.map((p) => p.id);
           if(pIds.sort().join() != peopleIds.sort().join()) {
             this.doneMap = {};
-            for(var p of this.people) {
-              this.doneMap[p.id] = p.get('isDone');
+            for(var p of participants) {
+              this.doneMap[p.id] = p.get('done');
             }
             this.$timeout(() => {
               this.people = participants;
               this.names = names;
             });
+          } else {
+            var shouldResetUsers = false;
+            for(var p of participants) {
+              console.log(`${p.id} ${this.doneMap[p.id]} vs ${p.get('done')}`)
+              if(this.doneMap[p.id] != p.get('done')) {
+                shouldResetUsers = true;
+                this.doneMap[p.id] = p.get('done')
+              }
+            }
+            if(shouldResetUsers) {
+              this.$timeout(() => {
+                this.people = participants;
+                this.names = names;
+              });
+            }
           }
         }
       });
@@ -72,7 +87,8 @@ export default class HomeController {
   }
   
   isDone(participant) {
-    return this.doneMap[participant.id]
+    if(participant == null) return;
+    return participant.get('done');
   }
   
   get totalPrice() {
@@ -81,7 +97,7 @@ export default class HomeController {
   
   poll() {
     this.updateSelf()
-    // this.$timeout(this.poll.bind(this), 2000);
+    this.$timeout(this.poll.bind(this), 2000);
   }
   
   book() {
