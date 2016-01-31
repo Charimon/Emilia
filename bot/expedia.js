@@ -4,9 +4,7 @@ var fs = require('fs');
 var airports = require('airports');
 var lunr = require('lunr');
 var http = require('request-promise-json');
-var Date = require('datejs');
-var Promise = require('promise');
-
+var DateFormat = require('dateformat');
 
 var conf = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
 
@@ -51,7 +49,8 @@ class API {
   }
   
   static getFlights(from, to, departure) {
-    return http.get(`http://terminal2.expedia.com/x/mflights/search?departureDate=${departure}&departureAirport=${from}&arrivalAirport=${to}&apikey=${expedia_key}`).then((res) => {
+    var departureStr = DateFormat(departure, "yyyy-mm-dd")
+    return http.get(`http://terminal2.expedia.com/x/mflights/search?departureDate=${departureStr}&departureAirport=${from}&arrivalAirport=${to}&apikey=${expedia_key}`).then((res) => {
       return res;
     });
   }
@@ -70,7 +69,9 @@ class API {
   }
   
   static getHotels(lat, lng, radiusKM, from, to) {
-    return http.get(`http://terminal2.expedia.com/x/hotels?location=${lat},${lng}&radius=${radiusKM}km&dates=${from},${to}&apikey=${expedia_key}`).then((res) => {
+    var fromStr = DateFormat(from, "yyyy-mm-dd")
+    var toStr = DateFormat(to, "yyyy-mm-dd")
+    return http.get(`http://terminal2.expedia.com/x/hotels?location=${lat},${lng}&radius=${radiusKM}km&dates=${fromStr},${toStr}&apikey=${expedia_key}`).then((res) => {
       return res;
     });
   }
@@ -105,10 +106,6 @@ class API {
   
   static getHotelSpreadCity(city, radiusKM, fromDate, toDate) {
     return API.getHotelSpread(city.lat, city.lng, radiusKM, fromDate, toDate);
-  }
-  
-  static getBestDatesForCity(city) {
-    
   }
 }
 

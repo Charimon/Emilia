@@ -11,7 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "airports": "^1.0.0",
-    "datejs": "0.0.2",
+    "chrono-node": "^1.1.2",
+    "date-math": "0.0.1",
+    "dateformat": "^1.0.12",
     "facebook-chat-api": "^1.0.6",
     "fs": "0.0.2",
     "lunr": "^0.6.0",
