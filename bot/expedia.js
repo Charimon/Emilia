@@ -1,3 +1,5 @@
+'use strict'
+
 var https = require('https');
 var fs = require('fs');
 var airports = require('airports');
@@ -12,7 +14,7 @@ var expedia_key = conf.expedia_key;
 var idx = lunr(function () {
   this.field('name')
 })
-for (var i = 0; i < airports.length; i++) { 
+for (i = 0; i < airports.length; i++) { 
   var airport = airports[i];
   airport.id = i;
   idx.add(airport);
@@ -23,12 +25,30 @@ var foundId = found[0].ref;
 // console.log(foundId);
 // console.log(airports[foundId]);
 
-rp('http://terminal2.expedia.com:80/x/mflights/search?departureDate=2016-03-14&departureAirport=SEA&arrivalAirport=YVR&apikey=' + expedia_key).then ( (res) => {
-  console.log(res)
-}).catch(function (err) {
-  // API call failed... 
-  console.error(err)
-});
+// rp('http://terminal2.expedia.com:80/x/mflights/search?departureDate=2016-03-14&departureAirport=SEA&arrivalAirport=YVR&apikey=' + expedia_key).then ( (res) => {
+//   console.log(res)
+// }).catch(function (err) {
+//   // API call failed... 
+//   console.error(err)
+// });
+
+class Polygon {
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+
+  get area() {
+    return this.calcArea();
+  }
+
+  calcArea() {
+    return this.height * this.width;
+  }
+}
+
+const p1 = new Polygon(10, 5)
+console.log(p1.area)
 
 
 //  function (res) {

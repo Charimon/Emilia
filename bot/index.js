@@ -5,42 +5,55 @@ var login = require("facebook-chat-api");
 var fs = require('fs');
 var conf = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
 var BotBrain = require("./botBrain.js");
+var Conversation = require('./conversation.js')
 
 var user = conf.user;
-var chatEmitter = new events.EventEmitter();
+Parse.initialize(conf.parse.applicationId, conf.parse.jsKey);
 
-BotBrain.start(conf).then(function(bot){
-  bot.api.listen(function(err, event) {
-    if(err) return console.error(err);
+// var chatEmitter = new events.EventEmitter();
+
+// BotBrain.start(conf).then(function(bot){
+//   bot.api.listen(function(err, event) {
+//     if(err) return console.error(err);
     
-    switch(event.type) {
-      case "message":
-        chatEmitter.emit('message', {event:event, bot:bot})
-        break;
-      case "event":
-        chatEmitter.emit('event', {event:event, bot:bot})
-        break;
-    }
-  });
-});
+//     switch(event.type) {
+//       case "message":
+//         chatEmitter.emit('message', {event:event, bot:bot})
+//         break;
+//       case "event":
+//         chatEmitter.emit('event', {event:event, bot:bot})
+//         break;
+//     }
+//   });
+// });
 
-chatEmitter.on('message', function(blob){
-  var event = blob.event;
-  var bot = blob.bot;
+// chatEmitter.on('message', function(blob){
+//   var event = blob.event;
+//   var bot = blob.bot;
   
-  debugger
+//   debugger
   
-  if(!bot.isAllowed(event)) {
-    bot.whittyError(event);
-    return;
-  }
+//   if(!bot.isAllowed(event)) {
+//     bot.whittyError(event);
+//     return;
+//   }
   
-  debugger
-  if(bot.isIndividualConvo(event)) {
-    bot.individualRespond(event);
-  } else {
-    bot.joinThread(event);
-    bot.respond(event);
-  }
+//   debugger
+//   if(bot.isIndividualConvo(event)) {
+//     bot.individualRespond(event);
+//   } else {
+//     bot.joinThread(event);
+//     bot.respond(event);
+//   }
   
-});
+// });
+
+var listening = (event, conversation_participants) => {
+  console.log("index.js - listning: event")
+  console.log(event)
+  console.log("index.js - listning: conversation")
+  console.log(conversation_participants)
+}
+
+var botBrain = new BotBrain();
+botBrain.start(conf.user.email, conf.user.password, listening);
